@@ -1,0 +1,4 @@
+label,fleiss_kappa,interpretation
+accuracy,0.9279,Almost Perfect
+completeness,0.9277,Almost Perfect
+satisfaction,0.8745,Almost Perfect

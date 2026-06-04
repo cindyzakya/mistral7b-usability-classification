@@ -1,0 +1,7 @@
+pandas
+numpy
+scikit-learn
+google-play-scraper
+google-genai
+python-dotenv
+statsmodels

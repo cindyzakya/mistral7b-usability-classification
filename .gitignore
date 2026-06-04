@@ -1,0 +1,15 @@
+# environment
+.env
+
+# python
+__pycache__/
+*.pyc
+
+# data (opsional, kalau tidak mau upload dataset)
+data/*.csv
+
+# vscode
+.vscode/
+
+# notebook checkpoints
+.ipynb_checkpoints/
