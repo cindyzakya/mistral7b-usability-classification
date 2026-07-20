@@ -1,0 +1,4 @@
+prompting_strategy,both_correct,base_only_correct,fine_tuned_only_correct,both_wrong,discordant_pairs,p_value,alpha,significant
+zero_shot,518,128,749,496,877,1.8238434321984514e-107,0.05,True
+one_shot,773,76,582,460,658,1.7222993694591658e-97,0.05,True
+few_shot,729,79,625,458,704,2.920458337311589e-106,0.05,True

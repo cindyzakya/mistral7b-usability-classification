@@ -4,16 +4,16 @@ from packaging import version
 import time
 import os
 
-# ==============================
-# 1. MENCARI N VERSI TERBARU
-# ==============================
+# 1. Get N latest versions
 def get_latest_versions(app_id, n_versions, limit_no_new=15):
     print(f"Mengidentifikasi {n_versions} versi terbaru aplikasi DANA...") 
 
+    # Set to store unique versions
     found_versions = set()
     continuation_token = None
     no_new_version_count = 0
 
+    # Loop until we find N versions
     while True:
         result, continuation_token = reviews(
             app_id,
@@ -43,7 +43,7 @@ def get_latest_versions(app_id, n_versions, limit_no_new=15):
 
         print(f"Total versi aplikasi terdeteksi: {len(found_versions)}")
 
-        # Stop jika tidak ada versi baru dalam beberapa batch
+        # Stop if no new version in several batches
         if no_new_version_count >= limit_no_new:
             print("Versi sudah cukup lengkap")
             break
@@ -53,6 +53,7 @@ def get_latest_versions(app_id, n_versions, limit_no_new=15):
 
         time.sleep(0.5)
 
+    # Sort versions from newest to oldest
     latest_versions = sorted(found_versions, key=version.parse, reverse=True)[:n_versions]
 
     print(f"\n{n_versions} Versi target:")
@@ -61,18 +62,19 @@ def get_latest_versions(app_id, n_versions, limit_no_new=15):
 
     return latest_versions
 
-# ==============================
-# 2. SCRAPING REVIEW BERDASARKAN VERSI
-# ==============================
+# 2. Scrape reviews by version
 def scrape_reviews(app_id, target_versions, limit_miss=20):
     print("\nMulai scraping review...")
 
+    # List to store all reviews
     all_reviews = []
     continuation_token = None
 
+    # Track active versions and missed counts
     version_active = {v: True for v in target_versions}
     version_miss_count = {v: 0 for v in target_versions}
 
+    # Loop until all versions are found
     while True:
         result, continuation_token = reviews(
             app_id,
@@ -85,7 +87,8 @@ def scrape_reviews(app_id, target_versions, limit_miss=20):
 
         if not result:
             break
-
+        
+        # Track versions found in this batch
         found_in_batch = {v: False for v in target_versions}
 
         for r in result:
@@ -94,7 +97,7 @@ def scrape_reviews(app_id, target_versions, limit_miss=20):
                 all_reviews.append(r)
                 found_in_batch[v] = True
 
-        # Update status tiap versi
+        # Update status for each version
         for v in target_versions:
             if found_in_batch[v]:
                 version_miss_count[v] = 0
@@ -106,7 +109,7 @@ def scrape_reviews(app_id, target_versions, limit_miss=20):
 
         print("Status versi:", version_active)
 
-        # Stop jika semua versi sudah habis
+        # Stop if all reviews are found
         if all(not active for active in version_active.values()):
             print("Scraping pada versi target telah selesai dilakukan")
             break
@@ -118,9 +121,8 @@ def scrape_reviews(app_id, target_versions, limit_miss=20):
 
     return all_reviews
 
-# ==============================
-# 3. SUMMARY STATISTIK
-# ==============================
+
+# 3. Statisctics Summary
 def show_summary(all_reviews):
     df = pd.DataFrame(all_reviews)
 
@@ -130,6 +132,7 @@ def show_summary(all_reviews):
 
     print("\nStatistik:")
 
+    # Statics by version
     stats = df.groupby('reviewCreatedVersion').agg(
         jumlah=('content', 'count'),
         awal=('at', 'min'),
@@ -138,9 +141,7 @@ def show_summary(all_reviews):
 
     print(stats)
 
-# ==============================
-# 4. MENYIMPAN DATA
-# ==============================
+# 4. Save Data
 def save_reviews(
     all_reviews,
     output_path=os.path.join(
@@ -162,20 +163,18 @@ def save_reviews(
     print(f"Data disimpan di: {output_path}")
 
 
-# ==============================
-# 5. MAIN (ENTRY POINT)
-# ==============================
+# 5. Main (Entry Point)
 if __name__ == "__main__":
     app_id = "id.dana"
 
-    # Ubah jumlah versi di sini
+    # Set number of versions
     N_VERSIONS = 20
 
     versions = get_latest_versions(app_id, n_versions=N_VERSIONS)
     reviews_data = scrape_reviews(app_id, versions)
     
-    # Menampilkan summary
+    # Show summary
     show_summary(reviews_data)
 
-    # Menyimpan ke CSV
+    # Save Data
     save_reviews(reviews_data)

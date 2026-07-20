@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 
+# Label
 LABELS = [
     "accuracy",
     "completeness",
@@ -42,6 +43,7 @@ def create_ground_truth(
             "Urutan review antar annotator tidak sama."
         )
 
+    # Check for missing values
     for label in LABELS:
         if (
             df1[label].isna().any()
@@ -55,12 +57,10 @@ def create_ground_truth(
     result = df1.copy()
     print(f"\nMemproses {len(result)} data...")
 
+    # Apply majority voting
     for label in LABELS:
-
         result[label] = [
-
             majority_vote(a, b, c)
-
             for a, b, c in zip(
                 df1[label],
                 df2[label],
@@ -84,7 +84,6 @@ def create_ground_truth(
 
 
 if __name__ == "__main__":
-
     BASE = os.path.join(
         "data",
         "labeled",

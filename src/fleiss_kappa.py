@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from statsmodels.stats.inter_rater import fleiss_kappa
 
+# Usability aspects evaluated for inter-annotator agreement
 LABELS = [
     "accuracy",
     "completeness",
@@ -25,8 +26,8 @@ def interpret_kappa(kappa):
     else:
         return "Almost Perfect"
 
+# Build the Fleiss' Kappa table
 def build_fleiss_table(df1, df2, df3, label):
-
     table = []
 
     for i in range(len(df1)):
@@ -56,7 +57,7 @@ def load_annotator_data(folder_path):
     for f in csv_files:
         print("-", f)
 
-    # PILOT STUDY
+    # Handle pilot annotation files
     if len(csv_files) == 3:
 
         print("\nPilot Study")
@@ -66,7 +67,7 @@ def load_annotator_data(folder_path):
 
         return df1, df2, df3
 
-    # FINAL STUDY
+    # Handle the complete annotation dataset
     elif len(csv_files) == 9:
 
         print("\nFinal Study")
@@ -86,6 +87,7 @@ def load_annotator_data(folder_path):
             if "_a3" in f
         ])
 
+        # Ensure each annotator has exactly 3 same files
         if not (
             len(a1_files) == 3
             and len(a2_files) == 3
@@ -157,7 +159,7 @@ def calculate_kappa(folder_path):
         folder_path
     )
 
-    # cek jumlah baris
+    # Cheeck number of rows
     if not (
         len(df1) == len(df2) == len(df3)
     ):
@@ -165,7 +167,7 @@ def calculate_kappa(folder_path):
             "Jumlah baris ketiga annotator tidak sama."
         )
 
-    # cek urutan review
+    # Check order of review
     if not (
         df1["cleaned_content"].equals(df2["cleaned_content"])
         and
@@ -180,9 +182,7 @@ def calculate_kappa(folder_path):
     results = []
 
     print("\n=== FLEISS' KAPPA ===")
-
     for label in LABELS:
-
         table = build_fleiss_table(
             df1,
             df2,

@@ -1,9 +1,9 @@
 content,cleaned_content,score,accuracy,completeness,satisfaction
 dana eror sudah buka dana tiba' keluar sendiri,dana eror sudah buka dana tiba keluar sendiri,2,1,0,0
-akun saya terkena hack,akun saya terkena hack,2,0,0,1
+akun saya terkena hack,akun saya terkena hack,2,0,0,0
 tidak bisa membayar pake Aris,tidak bisa membayar pake aris,1,1,0,0
 "saldo saya dipotong tanpa sepengetahuan saya, jika memang tidak bisa kembali, maaf saya gabakalan pakai dana lagi","saldo saya dipotong tanpa sepengetahuan saya, jika memang tidak bisa kembali, maaf saya gabakalan pakai dana lagi",1,1,0,1
-kzlin bgt dh ni aplikasi,kzlin bgt dh ni aplikasi,1,0,0,1
+kzlin bgt dh ni aplikasi,kzlin bgt dh ni aplikasi,1,0,1,1
 aplikasi sampah ngajuin keluhan malah di minta jelasin bolak balik tiap hari,aplikasi sampah ngajuin keluhan malah di minta jelasin bolak balik tiap hari,1,0,1,1
 "Dikit2 biaya, dikit2 biaya, udah aplikasinya lemot kebanyakan biaya lagi, saya sangat menyesal pakai rekening dana....","dikit2 biaya, dikit2 biaya, udah aplikasinya lemot kebanyakan biaya lagi, saya sangat menyesal pakai rekening dana....",1,1,0,1
 "tolong bantuannya min, transaksi sudah berhasil namun uang masih belum keterima","tolong bantuannya min, transaksi sudah berhasil namun uang masih belum keterima",1,1,0,0
@@ -26,9 +26,9 @@ kenap gak bisa masuk dana,kenap gak bisa masuk dana,1,1,0,0
 "sumpah kecewa banget sejak tadi DANA Bermasalah, gara gangguan saya mengalami kehilang uang akibat TF dua kali ke pelanggan, penyebab nya dana tidak memberitahukan uang itu masuk atau tidak","sumpah kecewa banget sejak tadi dana bermasalah, gara gangguan saya mengalami kehilang uang akibat tf dua kali ke pelanggan, penyebab nya dana tidak memberitahukan uang itu masuk atau tidak",1,1,1,1
 "ini kenapa? saya berusaha memasukkan nomor telepon tapi tetap tidak bisa, ngestuck disitu terus.","ini kenapa? saya berusaha memasukkan nomor telepon tapi tetap tidak bisa, ngestuck disitu terus.",1,1,0,0
 Dana cicil saya tidak aktif.padaha pemakaian udah lama.transaksi banyak.kasih bintang 1 aj dulu,dana cicil saya tidak aktif.padaha pemakaian udah lama.transaksi banyak.kasih bintang 1 aj dulu,1,0,1,1
-"Dana skrg jlk banget, susah banget verifikasi nya. udah difoto bukti malah gagal katanya. bingung emang kemauan nya apasih?!","dana skrg jlk banget, susah banget verifikasi nya. udah difoto bukti malah gagal katanya. bingung emang kemauan nya apasih?!",1,1,1,1
+"Dana skrg jlk banget, susah banget verifikasi nya. udah difoto bukti malah gagal katanya. bingung emang kemauan nya apasih?!","dana skrg jlk banget, susah banget verifikasi nya. udah difoto bukti malah gagal katanya. bingung emang kemauan nya apasih?!",1,1,0,1
 SERING GANGGUAN APALAGI SAAT MENGGUNAKAN QRIS,sering gangguan apalagi saat menggunakan qris,1,1,0,0
-jelek banget upgrade ke dana premium gagal tapi dipalak 5000 pula,jelek banget upgrade ke dana premium gagal tapi dipalak 5000 pula,1,1,1,1
+jelek banget upgrade ke dana premium gagal tapi dipalak 5000 pula,jelek banget upgrade ke dana premium gagal tapi dipalak 5000 pula,1,1,0,1
 "aplikasi pepek ribet banget kalo ada kendala ngk ngotak minta aneh""",aplikasi pepek ribet banget kalo ada kendala ngk ngotak minta aneh,1,0,1,1
 cepat dan akurat sangat membantu,cepat dan akurat sangat membantu,3,0,0,0
 qris nya sering eror GK jelas,qris nya sering eror gk jelas,1,1,0,0
@@ -36,7 +36,7 @@ banyak ganguan sehingga banyak orang kehilangan uang nya,banyak ganguan sehingga
 "bintang 3,soalnya tambah parah aja, biaya admin dari Rp.500 sekarang udah menjadi Rp.1000 parah","bintang 3,soalnya tambah parah aja, biaya admin dari rp.500 sekarang udah menjadi rp.1000 parah",3,0,0,1
 "uang didanaku dibobol orang,lapor ke cs cuma gitu aja.","uang didanaku dibobol orang,lapor ke cs cuma gitu aja.",1,1,1,1
 mau ganti nomor tapi nomor salah tidak sesuai nomor yang saya isi,mau ganti nomor tapi nomor salah tidak sesuai nomor yang saya isi,3,1,0,0
-"di even dana ngabuburit sudah di tungguin jam 10 pagi pas, di klik langsung habis,, ternyata cuma SCAM,, beda dengan gopay, coba lo lihat event gopay wartakjil sudah pasti dapat hadiahnya","di even dana ngabuburit sudah di tungguin jam 10 pagi pas, di klik langsung habis,, ternyata cuma scam,, beda dengan gopay, coba lo lihat event gopay wartakjil sudah pasti dapat hadiahnya",1,0,1,1
+"di even dana ngabuburit sudah di tungguin jam 10 pagi pas, di klik langsung habis,, ternyata cuma SCAM,, beda dengan gopay, coba lo lihat event gopay wartakjil sudah pasti dapat hadiahnya","di even dana ngabuburit sudah di tungguin jam 10 pagi pas, di klik langsung habis,, ternyata cuma scam,, beda dengan gopay, coba lo lihat event gopay wartakjil sudah pasti dapat hadiahnya",1,0,0,1
 saya mau login aplikasi dana tanpa kode otp karna nomor sudah hilang,saya mau login aplikasi dana tanpa kode otp karna nomor sudah hilang,1,0,1,0
 ini kenapa gak masuk Kouta yang udah di beli,ini kenapa gak masuk kouta yang udah di beli,1,1,0,0
 "aplikasi jelek, masa saya trasnfer uang ga ada aktivitas nya , bintang 1 jelek ni apk","aplikasi jelek, masa saya trasnfer uang ga ada aktivitas nya , bintang 1 jelek ni apk",1,1,0,1

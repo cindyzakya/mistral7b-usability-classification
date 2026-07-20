@@ -10,18 +10,13 @@ from dotenv import load_dotenv
 from google import genai
 
 # Config
-INPUT_PATH = os.path.join(
-    "data",
-    "unlabeled",
-    "train_manual.csv"
-)
+INPUT_PATH = os.path.join("data", "unlabeled", "train_manual.csv")
+EXAMPLE_SOURCE = os.path.join("data", "labeled", "pseudolabel", "selected_prompt_examples.csv")
 
-VALID_METHODS = [
-    "zero_shot",
-    "one_shot",
-    "few_shot"
-]
+VALID_METHODS = ["zero_shot", "one_shot", "few_shot"]
+LABELS = ["accuracy", "completeness", "satisfaction"]
 
+# Check if prompting method is provided
 if len(sys.argv) != 2:
     print(
         "Metode prompting belum diberikan.\n\n"
@@ -33,28 +28,18 @@ if len(sys.argv) != 2:
     sys.exit()
 
 PROMPTING_METHOD = sys.argv[1]
+
 if PROMPTING_METHOD not in VALID_METHODS:
-    raise ValueError(
-        f"Metode tidak valid: {PROMPTING_METHOD}"
-    )
+    raise ValueError(f"Metode tidak valid: {PROMPTING_METHOD}")
 
-OUTPUT_DIR = os.path.join(
-    "data",
-    "labeled",
-    "pseudolabel",
-    f"manual_{PROMPTING_METHOD}"
-)
-
-FINAL_OUTPUT = os.path.join(
-    OUTPUT_DIR,
-    f"manual_{PROMPTING_METHOD}_merged.csv"
-)
+OUTPUT_DIR = os.path.join("data", "labeled", "pseudolabel", f"manual_{PROMPTING_METHOD}")
+FINAL_OUTPUT = os.path.join(OUTPUT_DIR, f"manual_{PROMPTING_METHOD}_merged.csv")
 
 BATCH_SIZE = 50
-EXPERIMENT_SIZE = 500
+EXPERIMENT_SIZE = None
 SLEEP_TIME = 3
 MAX_RETRY = 3
-
+RETRY_SLEEP_TIME = 30
 MODEL_NAME = "gemini-3.5-flash"
 
 # Load env
@@ -137,31 +122,93 @@ def annotation_guideline():
     - Ulasan yang tidak berkaitan dengan usability dapat diberi semua label 0.
     - Label diberikan berdasarkan isi utama ulasan.
     - Fokus pada makna keseluruhan ulasan, bukan hanya keyword tertentu.
-    - Keluhan teknis sering menghasilkan accuracy = 1.
+    - Keluhan teknis dapat menghasilkan accuracy = 1.
     - Keluhan teknis yang disertai nada negatif dapat menghasilkan satisfaction = 1.
-    - Dana atau saldo hilang biasanya accuracy = 1.
-    - Dana cicilan atau fitur yang belum muncul biasanya completeness = 1.
-    - Fitur tersedia tetapi tidak dapat digunakan biasanya accuracy = 1.
+    - Dana atau saldo hilang menghasilkan accuracy = 1.
+    - Dana cicilan atau fitur yang belum muncul menghasilkan completeness = 1.
+    - Fitur tersedia tetapi tidak dapat digunakan menghasilkan accuracy = 1.
     - CS atau layanan bantuan yang tidak membantu dapat dianggap completeness = 1 dan satisfaction = 1.
     - Jika suatu aspek tidak relevan, beri 0.
     - Jangan melewatkan ulasan.
     - Jumlah output HARUS sama dengan jumlah input.
 
     Format output:
-    [
-    {
-        "accuracy": 0,
-        "completeness": 0,
-        "satisfaction": 0
-    }
-    ]
+    [{"accuracy": 0, "completeness": 0, "satisfaction": 0}]
 
     Output HARUS berupa JSON valid tanpa teks tambahan.
     """
 
+# Format Examples for one-shot & few-shot prompting
+def format_examples(examples):
+    text = ""
+
+    for idx, example in enumerate(examples, start=1):
+        text += f"""
+        Contoh {idx} untuk label {example["target_label"]}:
+        Ulasan:
+        {example["review"]}
+
+        Output:
+        {{"accuracy":{example["accuracy"]},"completeness":{example["completeness"]},"satisfaction":{example["satisfaction"]}}}
+        """
+
+    return text
+
+# Load selected examples
+def load_prompt_examples():
+    df = pd.read_csv(EXAMPLE_SOURCE)
+
+    required_columns = [
+        "target_label",
+        "cleaned_content",
+        "accuracy",
+        "completeness",
+        "satisfaction"
+    ]
+
+    for col in required_columns:
+        if col not in df.columns:
+            raise ValueError(
+                f"Kolom '{col}' tidak ditemukan di {EXAMPLE_SOURCE}"
+            )
+
+    def select_examples(n_per_label):
+        examples = []
+
+        for label in LABELS:
+            selected = (
+                df.loc[
+                    df["target_label"] == label
+                ]
+                .head(n_per_label)
+            )
+
+            if len(selected) != n_per_label:
+                raise ValueError(
+                    f"Jumlah contoh untuk label '{label}' harus {n_per_label}."
+                )
+
+            for _, row in selected.iterrows():
+                examples.append({
+                    "target_label": label,
+                    "review": row["cleaned_content"],
+                    "accuracy": int(row["accuracy"]),
+                    "completeness": int(row["completeness"]),
+                    "satisfaction": int(row["satisfaction"])
+                })
+
+        return examples
+
+    one_shot_examples = select_examples(n_per_label=1)
+    few_shot_examples = select_examples(n_per_label=2)
+
+    return one_shot_examples, few_shot_examples
+
+ONE_SHOT_EXAMPLES, FEW_SHOT_EXAMPLES = load_prompt_examples()
+
+
 # Zero-shot prompting
 def zero_shot_prompt(review_text):
-
     return f"""
     {annotation_guideline()}
 
@@ -173,20 +220,13 @@ def zero_shot_prompt(review_text):
 
 # One-shot prompting
 def one_shot_prompt(review_text):
+    examples = format_examples(ONE_SHOT_EXAMPLES)
 
     return f"""
     {annotation_guideline()}
 
-    Contoh:
-    Ulasan:
-    "Aplikasi sering error saat transfer"
-
-    Output:
-    {{
-        "accuracy": 1,
-        "completeness": 0,
-        "satisfaction": 0
-    }}
+    Contoh anotasi:
+    {examples}
 
     Data ulasan:
     {review_text}
@@ -196,41 +236,13 @@ def one_shot_prompt(review_text):
 
 # Few-shot prompting
 def few_shot_prompt(review_text):
+    examples = format_examples(FEW_SHOT_EXAMPLES)
 
     return f"""
     {annotation_guideline()}
 
-    Contoh:
-
-    Ulasan 0:
-    "Aplikasi sering error saat transfer"
-    Output:
-    {{"accuracy":1,"completeness":0,"satisfaction":0}}
-
-    Ulasan 1:
-    "Fitur cicilan belum muncul"
-    Output:
-    {{"accuracy":0,"completeness":1,"satisfaction":0}}
-
-    Ulasan 2:
-    "CS tidak membantu sama sekali"
-    Output:
-    {{"accuracy":0,"completeness":1,"satisfaction":1}}
-
-    Ulasan 3:
-    "Dana saya hilang dan sangat mengecewakan"
-    Output:
-    {{"accuracy":1,"completeness":0,"satisfaction":1}}
-
-    Ulasan 4:
-    "Aplikasi parah, loading terus"
-    Output:
-    {{"accuracy":1,"completeness":0,"satisfaction":1}}
-
-    Ulasan 5:
-    "OTP wajib padahal nomor lama sudah hilang"
-    Output:
-    {{"accuracy":0,"completeness":1,"satisfaction":0}}
+    Contoh anotasi:
+    {examples}
 
     Data ulasan:
     {review_text}
@@ -240,14 +252,13 @@ def few_shot_prompt(review_text):
 
 # Create prompt
 def create_batch_prompt(reviews):
-
     review_text = ""
 
     for i, review in enumerate(reviews):
         review_text += f"""
-    Review {i}:
-    \"\"\"{review}\"\"\"
-    """
+        Review {i}:
+        \"\"\"{review}\"\"\"
+        """
 
     if PROMPTING_METHOD == "zero_shot":
         return zero_shot_prompt(review_text)
@@ -260,7 +271,6 @@ def create_batch_prompt(reviews):
 
 # Gemini call
 def label_batch(reviews):
-
     prompt = create_batch_prompt(reviews)
 
     for attempt in range(MAX_RETRY):
@@ -277,27 +287,29 @@ def label_batch(reviews):
 
             outputs = json.loads(response.text)
             
-            # validasi jumlah output
+            if not isinstance(outputs, list):
+                print("\nOutput bukan list JSON")
+                continue
+
+            # validate output length
             if len(outputs) != len(reviews):
                 print("\nJumlah output tidak sesuai!")
                 print(f"Expected : {len(reviews)}")
                 print(f"Received : {len(outputs)}")
-
-                return None
+                continue
 
             return outputs
 
         except Exception as e:
             print(f"\nError batch attempt {attempt+1}")
             print(e)
-
-            time.sleep(5)
+            print(f"Menunggu {RETRY_SLEEP_TIME} detik sebelum mencoba kembali...")
+            time.sleep(RETRY_SLEEP_TIME)
 
     return None
 
 # Process batch
 def process_batch(batch_df, batch_idx):
-
     reviews = batch_df["cleaned_content"].fillna("").tolist()
 
     print(f"\nProcessing batch {batch_idx}")
@@ -306,13 +318,11 @@ def process_batch(batch_df, batch_idx):
 
     if outputs is None:
         print(f"Batch {batch_idx} gagal")
-
         return False
 
     results = []
 
     for (_, row), output in zip(batch_df.iterrows(), outputs):
-
         results.append({
             "content": row.get("content", ""),
             "cleaned_content": row.get("cleaned_content", ""),
@@ -340,7 +350,6 @@ def process_batch(batch_df, batch_idx):
 
 # Merge all batches
 def merge_batches():
-
     print("\nMerging all batches...")
 
     batch_files = sorted(
@@ -356,9 +365,7 @@ def merge_batches():
     all_df = []
 
     for file in batch_files:
-
         df = pd.read_csv(file)
-
         all_df.append(df)
 
     final_df = pd.concat(all_df, ignore_index=True)
@@ -372,28 +379,22 @@ def merge_batches():
     print(f"\nFinal file saved : {FINAL_OUTPUT}")
     print(f"Total labeled data : {len(final_df)}")
     print("\nDistribusi label:")
-    for label in [
-        "accuracy",
-        "completeness",
-        "satisfaction"
-    ]:
-
+    for label in LABELS:
         print(
             f"{label}: "
             f"{final_df[label].sum()}"
         )
 
-# =========================================================
-# MAIN LABELING
-# =========================================================
+# Main labeling
 def run_experiment():
     print("Loading dataset...")
 
     df = pd.read_csv(INPUT_PATH)
-    df = df.head(EXPERIMENT_SIZE)
+
+    if EXPERIMENT_SIZE is not None:
+        df = df.head(EXPERIMENT_SIZE)
 
     total_data = len(df)
-
     total_batches = math.ceil(total_data / BATCH_SIZE)
 
     print(f"Prompting method : {PROMPTING_METHOD}")
@@ -401,8 +402,15 @@ def run_experiment():
     print(f"Batch size   : {BATCH_SIZE}")
     print(f"Total batch  : {total_batches}")
 
-    for batch_idx in range(total_batches):
+    if PROMPTING_METHOD == "one_shot":
+        print("\nContoh one-shot yang digunakan:")
+        print(format_examples(ONE_SHOT_EXAMPLES))
 
+    elif PROMPTING_METHOD == "few_shot":
+        print("\nContoh few-shot yang digunakan:")
+        print(format_examples(FEW_SHOT_EXAMPLES))
+
+    for batch_idx in range(total_batches):
         start = batch_idx * BATCH_SIZE
         end = start + BATCH_SIZE
 
@@ -416,27 +424,22 @@ def run_experiment():
             f"batch_{batch_idx:04d}.csv"
         )
 
-        # skip jika batch sudah ada
+        # skip batch that already exist
         if os.path.exists(batch_file):
-
             print(f"Skip existing batch {batch_idx}")
-
             continue
 
         success = process_batch(batch_df, batch_idx)
 
         if not success:
-
             print(f"Skip batch {batch_idx} karena error")
-
             continue
 
         # rate limit safety
         time.sleep(SLEEP_TIME)
 
-    # =====================================================
-    # CHECK COMPLETION
-    # =====================================================
+
+    # Check completion
     existing_batches = len(
         glob.glob(os.path.join(OUTPUT_DIR, "batch_*.csv"))
     )
@@ -444,18 +447,12 @@ def run_experiment():
     print(f"\nFinished batches : {existing_batches}/{total_batches}")
 
     if existing_batches == total_batches:
-
         print("\nSemua batch selesai")
         merge_batches()
-
     else:
-
         print("\nMasih ada batch yang belum selesai")
         print("Silakan jalankan ulang script untuk melanjutkan proses labeling")
 
-# =========================================================
 # MAIN
-# =========================================================
 if __name__ == "__main__":
-
     run_experiment()

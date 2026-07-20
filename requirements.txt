@@ -5,3 +5,12 @@ google-play-scraper
 google-genai
 python-dotenv
 statsmodels
+matplotlib
+transformers
+datasets
+trl
+peft
+bitsandbytes
+accelerate
+huggingface-hub
+torch

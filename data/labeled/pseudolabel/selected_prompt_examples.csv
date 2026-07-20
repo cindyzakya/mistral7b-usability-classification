@@ -1,0 +1,7 @@
+target_label,cleaned_content,accuracy,completeness,satisfaction
+accuracy,"semalam saya transfer 2x. laporan terkirim saldo kepotong, tapi duitnya disana gak masuk",1,0,0
+accuracy,ngk bisa masuk akun padahal semua udah diisi malah kendala terus,1,0,0
+completeness,"sampai saat ini dana paylater tidak muncul di akun saya,",0,1,0
+completeness,dana instan tidak ada dana pinjam tidak ada dana cicil tidak ada punya saya,0,1,0
+satisfaction,"sangat kecewa sekali, sudah banyak bertransaksi di sini, tapi nggk ada untung nya, mending paket aplikasi lain aja,",0,0,1
+satisfaction,pelayanan buruk kemanan buruk respon buruk segera perbaiki jika tidak ingin di tinggalkan,0,0,1

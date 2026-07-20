@@ -19,18 +19,16 @@ df = pd.read_csv(INPUT_FILE)
 
 print(f"Total dataset: {len(df)}")
 
-# Cek distribusi versi
+# Check distribution by version
 print("\nDistribusi review per versi:")
 print(df['reviewCreatedVersion'].value_counts())
 
-# =========================================================
-# SPLIT 1
+# Split 1
 # 80% TRAIN
 # 10% VALIDATION
 # 10% TEST
-# STRATIFIED BERDASARKAN VERSI
+# Stratified by version
 # =========================================================
-
 train_df, temp_df = train_test_split(
     df,
     test_size=0.20,
@@ -47,13 +45,11 @@ validation_df, test_df = train_test_split(
     stratify=temp_df['reviewCreatedVersion']
 )
 
+# Split 2
+# Train Set:
+# 80% Pseudo-label
+# 20% Manual annotation
 # =========================================================
-# SPLIT 2
-# TRAIN SET:
-# 80% PSEUDO-LABEL
-# 20% MANUAL ANNOTATION
-# =========================================================
-
 pseudo_df, manual_train_df = train_test_split(
     train_df,
     test_size=0.20,
@@ -62,9 +58,8 @@ pseudo_df, manual_train_df = train_test_split(
     stratify=train_df['reviewCreatedVersion']
 )
 
-# ==============================
-# INFO
-# ==============================
+
+# Info
 print("\n===== HASIL SPLIT DATASET =====")
 print(f"Train Set Total         : {len(train_df)}")
 print(f"Pseudo-label Train Set  : {len(pseudo_df)}")
@@ -72,10 +67,8 @@ print(f"Manual Train Set        : {len(manual_train_df)}")
 print(f"Validation Set          : {len(validation_df)}")
 print(f"Test Set                : {len(test_df)}")
 
-# ==============================
-# CEK DISTRIBUSI VERSI
-# ==============================
 
+# Check distribution by version
 print("\n====== DISTRIBUSI VERSI ======")
 print("Train Set:")
 print(train_df['reviewCreatedVersion'].value_counts(normalize=True))

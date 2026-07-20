@@ -3,9 +3,7 @@ import re
 import os
 import numpy as np
 
-# ==============================
-# CLEANING FUNCTION
-# ==============================
+# Cleaning function
 def clean_text(text):
     if pd.isna(text):
         return ""
@@ -13,65 +11,55 @@ def clean_text(text):
     # 1. Case folding
     text = text.lower()
 
-    # 2. Hapus URL
+    # 2. Delete URL
     text = re.sub(r"http\S+|www\S+", "", text)
 
-    # 3. Hapus karakter aneh (tanda baca dasar dipertahankan)
+    # 3. Delete symbols (keep basic punctuation)
     text = re.sub(r"[^a-z0-9\s.,!?]", " ", text)
 
-    # 4. Rapikan spasi
+    # 4. Clean whitespace
     text = re.sub(r"\s+", " ", text).strip()
 
     return text
 
 
-# ==============================
-# FILTERING (RELEVANSI)
-# ==============================
+# Filtering relevansi
 def is_relevant(text, min_length=4):
     words = text.split()
 
-    # terlalu pendek
+    # too short
     if len(words) < min_length:
         return False
 
-    # tidak ada huruf
+    # no letters
     if not re.search(r"[a-z]", text):
         return False
 
     return True
 
 
-# ==============================
-# VALIDASI VERSION
-# ==============================
+# Validate version
 def valid_version(v):
     if pd.isna(v):
         return False
     return isinstance(v, str) and v.count('.') >= 2
 
 
-# ==============================
-# FILTER VERSION BERDASARKAN JUMLAH REVIEW
-# ==============================
+# Filter based on number of reviews
 def filter_versions_by_review_count(df):
 
     print("\nMenghitung jumlah review per versi...")
 
-    # hitung jumlah review tiap versi
+    # count the number of reviews per version
     counts = df['reviewCreatedVersion'].value_counts()
 
     print("\nJumlah review per versi:")
     print(counts)
 
-    # ==============================
-    # LOG TRANSFORMATION
-    # ==============================
+    # Log transformation
     log_counts = np.log10(counts.values)
 
-    # ==============================
-    # IQR PADA DATA LOG
-    # ==============================
+    # IQR on log data
     Q1 = np.percentile(log_counts, 25)
     Q3 = np.percentile(log_counts, 75)
 
@@ -79,7 +67,7 @@ def filter_versions_by_review_count(df):
 
     lower_bound = Q1 - 1.5 * IQR
 
-    # kembali ke skala asli
+    # Back to real-world scale
     threshold = 10 ** lower_bound
 
     print("\n===== HASIL DETEKSI OUTLIER BERBASIS LOG-IQR =====")
@@ -89,27 +77,22 @@ def filter_versions_by_review_count(df):
     print(f"Lower Bound (log)  : {lower_bound:.3f}")
     print(f"Threshold review   : {threshold:.2f}")
 
-    # ==============================
-    # DETEKSI OUTLIER RENDAH
-    # ==============================
+
+    # Detect low outliers
     outlier_versions = counts[counts < threshold]
 
-    print("\nVersi yang dianggap outlier rendah:")
+    print("\nVersions that are considered outliers:")
     for v in outlier_versions.index:
         print(f"- {v} ({counts[v]} review)")
 
-    # ==============================
-    # AMBIL VERSI VALID
-    # ==============================
+    # Get valid version
     valid_versions = counts[counts >= threshold].index.tolist()
 
     print("\nVersi yang digunakan:")
     for v in valid_versions:
         print(f"- {v} ({counts[v]} review)")
 
-    # ==============================
-    # FILTER DATAFRAME
-    # ==============================
+    # Filter dataframe
     df_filtered = df[
         df['reviewCreatedVersion'].isin(valid_versions)
     ].reset_index(drop=True)
@@ -119,9 +102,7 @@ def filter_versions_by_review_count(df):
     return df_filtered
 
 
-# ==============================
-# MAIN PREPROCESSING
-# ==============================
+# Main preprocessing
 def preprocess(input_path, output_path):
     print("Loading data...")
 
@@ -129,26 +110,24 @@ def preprocess(input_path, output_path):
 
     print(f"Total data awal: {len(df)}")
 
-    # Ambil kolom penting
+    # Keep important columns
     df = df[['content', 'reviewCreatedVersion', 'score']]
 
     # Drop NA
     df = df.dropna(subset=['content'])
 
-    # ==============================
-    # FILTER RATING (<= 3)
-    # ==============================
+    # Filter rating (<= 3)
     df = df[df['score'] <= 3]
     print(f"Total setelah filter rating <= 3: {len(df)}")
 
-    # Validasi versi
+    # Validate version
     df = df[df['reviewCreatedVersion'].apply(valid_version)]
 
     # Cleaning
     print("Cleaning text...")
     df['cleaned_content'] = df['content'].apply(clean_text)
 
-    # Hapus duplikasi
+    # Drop duplicates
     df = df.drop_duplicates(subset=['cleaned_content'])
 
     # Filtering relevansi
@@ -159,15 +138,13 @@ def preprocess(input_path, output_path):
 
     df = filter_versions_by_review_count(df)
 
-    # Simpan
+    # Save
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False, encoding='utf-8')
 
     print(f"Data disimpan di: {output_path}")
 
-# ==============================
-# MAIN
-# ==============================
+# Main
 if __name__ == "__main__":
     preprocess(
         input_path=os.path.join(
